@@ -7,7 +7,7 @@ date: 2026-05-11
 
 ## Context
 
-The whole point of the app is that the *aggregate* count of still phones is public, but no individual phone's state is. Naïvely publishing `{ peerId, still }` defeats the goal.
+The whole point of the app is that the _aggregate_ count of still phones is public, but no individual phone's state is. Naïvely publishing `{ peerId, still }` defeats the goal.
 
 ## Decision
 
