@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Silence } from "./features/silence/Silence";
 import { SettingsDrawer } from "./features/settings/SettingsDrawer";
 import { appConfig } from "./shared/config";
+import { InviteShareButton } from "@baditaflorin/mesh-common";
 
 const STORAGE = {
   room: `${appConfig.storagePrefix}:room`,
@@ -33,6 +34,7 @@ export function App() {
     <div className="app-root">
       <Silence roomId={roomId} durationMinutes={durationMinutes} jerkThreshold={jerkThreshold} />
 
+      <InviteShareButton appName={appConfig.appName} roomId={roomId} />
       <button
         type="button"
         className="settings-fab"
