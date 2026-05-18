@@ -1,6 +1,9 @@
 export const appConfig = {
   appName: "mesh-silence-counter",
   storagePrefix: "mesh-silence-counter",
+  description:
+    "Peer-to-peer mesh: group meditation timer. Phones detect stillness via accelerometer and aggregate the count anonymously.",
+  accentHex: "#9c8cf5",
   version: __APP_VERSION__,
   commit: __GIT_COMMIT__,
   repositoryUrl: "https://github.com/baditaflorin/mesh-silence-counter",
