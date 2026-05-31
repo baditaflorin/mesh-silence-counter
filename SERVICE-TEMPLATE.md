@@ -54,21 +54,21 @@ Then list the registration steps the human needs to run.
 Make these four calls **before** writing any code; they determine every
 template below.
 
-| Decision      | How to pick                                                                 |
-|---------------|-----------------------------------------------------------------------------|
-| **Mesh**      | Public demo / auth-free dashboard → `mesh-pages`. Path-token recon / domain analysis → `mesh-0crawl`. API-key gated tool → `mesh-0exec`. |
+| Decision      | How to pick                                                                                                                                                                                                                |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Mesh**      | Public demo / auth-free dashboard → `mesh-pages`. Path-token recon / domain analysis → `mesh-0crawl`. API-key gated tool → `mesh-0exec`.                                                                                   |
 | **Category**  | Must be one of the enum in `schema/v1.json` (`proxy`, `search`, `ocr`, `geo`, `nlp`, `content`, `domains`, `security`, `recon`, `infrastructure`, `web_analysis`, `visualization`, `registry`, `dashboard`). Don't invent. |
-| **Slug**      | Derived from repo name by the rules in `FLEET.md` §Slug rules. Don't pick by hand — let `bin/generate.py` derive it and verify the result. |
-| **Host port** | `fleet-runner allocate-port --count 1` (reserved range 18100–18999). Never squat. |
+| **Slug**      | Derived from repo name by the rules in `FLEET.md` §Slug rules. Don't pick by hand — let `bin/generate.py` derive it and verify the result.                                                                                 |
+| **Host port** | `fleet-runner allocate-port --count 1` (reserved range 18100–18999). Never squat.                                                                                                                                          |
 
 The mesh determines auth, routing, and what `service.yaml.api.endpoint`
 looks like:
 
-| Mesh         | `api.endpoint`     | Auth header / param                                |
-|--------------|--------------------|----------------------------------------------------|
-| `mesh-0exec` | `/` (or `/v1/...`) | `?api_key=…` or `X-API-Key`                        |
-| `mesh-0crawl`| `/t/{token}/`      | path token; default `default_token` for public demo |
-| `mesh-pages` | `/`                | none                                               |
+| Mesh          | `api.endpoint`     | Auth header / param                                 |
+| ------------- | ------------------ | --------------------------------------------------- |
+| `mesh-0exec`  | `/` (or `/v1/...`) | `?api_key=…` or `X-API-Key`                         |
+| `mesh-0crawl` | `/t/{token}/`      | path token; default `default_token` for public demo |
+| `mesh-pages`  | `/`                | none                                                |
 
 ---
 
@@ -190,14 +190,14 @@ id: <id>
 name: <Human Display Name>
 category: <enum value from schema/v1.json>
 version: "0.1.0"
-port: <host_port>           # must match docker-compose, Dockerfile, deploy.yaml
+port: <host_port> # must match docker-compose, Dockerfile, deploy.yaml
 description: One-line summary of what this service does.
 owner:
-  name: "Florin"                      # individual or team name
-  contact: "baditaflorin@gmail.com"   # canonical contact (email / slack handle)
-  github: "baditaflorin"              # optional; default assignee for issues / PRs
+  name: "Florin" # individual or team name
+  contact: "baditaflorin@gmail.com" # canonical contact (email / slack handle)
+  github: "baditaflorin" # optional; default assignee for issues / PRs
 api:
-  endpoint: /                # or /t/{token}/ for mesh-0crawl
+  endpoint: / # or /t/{token}/ for mesh-0crawl
   method: GET
   params:
     - name: q
@@ -208,10 +208,10 @@ health:
   endpoint: /health
   expected_status: 200
 test:
-  url: /?q=example           # something that produces a real 200
+  url: /?q=example # something that produces a real 200
   expected_status: 200
 deploy:
-  path: /opt/services/<id>   # /opt/security/<id> or /home/ubuntu_vm/pentest/<id> for those buckets
+  path: /opt/services/<id> # /opt/security/<id> or /home/ubuntu_vm/pentest/<id> for those buckets
 requires:
   - docker
 build:
@@ -222,14 +222,14 @@ registry:
   org: baditaflorin
   image: <id>
 docker:
-  network: default           # or `pentest_network` / a mesh-specific net
+  network: default # or `pentest_network` / a mesh-specific net
   restart: unless-stopped
   port: <host_port>
 server:
-  host: <dockerhost>            # real ssh target in private fleet-state/OPS.md   # dockerhost; see private fleet-state/OPS.md
+  host: <dockerhost> # real ssh target in private fleet-state/OPS.md   # dockerhost; see private fleet-state/OPS.md
   deploy_path: /opt/services/<id>
 nginx:
-  subdomain: <slug>.0exec.com   # or .0crawl.com
+  subdomain: <slug>.0exec.com # or .0crawl.com
 ```
 
 #### `owner:` — who to ping when this service breaks
@@ -241,16 +241,16 @@ instead of getting lost.
 
 ```yaml
 owner:
-  name: "Florin"                      # individual or team name
-  contact: "baditaflorin@gmail.com"   # canonical contact (email or @slack-handle)
-  github: "baditaflorin"              # optional; default GitHub assignee
+  name: "Florin" # individual or team name
+  contact: "baditaflorin@gmail.com" # canonical contact (email or @slack-handle)
+  github: "baditaflorin" # optional; default GitHub assignee
 ```
 
-| Field            | Required | Notes                                                                 |
-|------------------|----------|-----------------------------------------------------------------------|
-| `owner.name`     | yes      | Free-form. "Florin", "platform-team", "infra".                         |
-| `owner.contact`  | yes      | Canonical contact — email, slack handle, mailing list, etc.            |
-| `owner.github`   | no       | GitHub login for assignee defaults. Falls back to `baditaflorin` if absent. |
+| Field           | Required | Notes                                                                       |
+| --------------- | -------- | --------------------------------------------------------------------------- |
+| `owner.name`    | yes      | Free-form. "Florin", "platform-team", "infra".                              |
+| `owner.contact` | yes      | Canonical contact — email, slack handle, mailing list, etc.                 |
+| `owner.github`  | no       | GitHub login for assignee defaults. Falls back to `baditaflorin` if absent. |
 
 **Scope**: internal-only. `owner:` is NOT exposed in the public
 `services-public.json` mirror (the `PUBLIC_FIELDS` allowlist in
@@ -277,7 +277,7 @@ keep just the deploy-time bits:
 deploy:
   path: /opt/services/<id>
 server:
-  host: <dockerhost>            # real ssh target in private fleet-state/OPS.md
+  host: <dockerhost> # real ssh target in private fleet-state/OPS.md
   deploy_path: /opt/services/<id>
 nginx:
   subdomain: <slug>.0exec.com
@@ -383,7 +383,9 @@ One-paragraph description of what the service does.
 ## Usage
 
 curl 'https://<slug>.0exec.com/?q=example&api_key=<KEY>'
+
 # or for mesh-0crawl:
+
 curl 'https://<slug>.0crawl.com/t/default_token/?q=example'
 
 Response: JSON, fields documented below.
@@ -395,10 +397,10 @@ docker compose up --build
 
 ## Endpoints
 
-- GET /            — main entrypoint (params: q)
-- GET /health      — liveness; {"status":"healthy","service":"<id>","version":"<ver>"}
-- GET /version     — current version
-- GET /metrics     — request counters
+- GET / — main entrypoint (params: q)
+- GET /health — liveness; {"status":"healthy","service":"<id>","version":"<ver>"}
+- GET /version — current version
+- GET /metrics — request counters
 ```
 
 ### `CLAUDE.md`
@@ -410,14 +412,14 @@ edit per-service — `fleet-runner inject` re-syncs it from the registry.
 
 ## 3. Required endpoints
 
-| Path           | Set by                            | Notes                                                             |
-|----------------|-----------------------------------|-------------------------------------------------------------------|
-| `GET /health`  | `go-common/server` automatically  | `{"status":"healthy","service":"<id>","version":"<ver>"}`         |
-| `GET /version` | `go-common/server` automatically  | Plain version string                                              |
-| `GET /metrics` | `go-common/server` automatically  | JSON request counters (Prometheus shape on roadmap)               |
-| `GET /selftest`| You (see below)                   | Liveness probe of real upstreams — consumed by selftest-aggregator |
-| `GET /_gw_health` | nginx vhost template           | **Do not** implement; the gateway adds it                         |
-| Your route(s)  | You                               | `/` for 0exec/pages; `/t/{token}/` plus `/<id>` for 0crawl        |
+| Path              | Set by                           | Notes                                                              |
+| ----------------- | -------------------------------- | ------------------------------------------------------------------ |
+| `GET /health`     | `go-common/server` automatically | `{"status":"healthy","service":"<id>","version":"<ver>"}`          |
+| `GET /version`    | `go-common/server` automatically | Plain version string                                               |
+| `GET /metrics`    | `go-common/server` automatically | JSON request counters (Prometheus shape on roadmap)                |
+| `GET /selftest`   | You (see below)                  | Liveness probe of real upstreams — consumed by selftest-aggregator |
+| `GET /_gw_health` | nginx vhost template             | **Do not** implement; the gateway adds it                          |
+| Your route(s)     | You                              | `/` for 0exec/pages; `/t/{token}/` plus `/<id>` for 0crawl         |
 
 ### `/selftest` — one small round-trip, NOT a full handler invocation
 
@@ -432,7 +434,7 @@ Two prescriptions, both load-bearing:
 
 1. **Do one small round-trip, not a real query.** If your service
    wraps the Wikidata API, `/selftest` should `GET
-   https://www.wikidata.org/wiki/Special:Statistics` or equivalent —
+https://www.wikidata.org/wiki/Special:Statistics` or equivalent —
    just enough to prove the upstream is reachable + your client can
    parse a response. Do NOT run the full handler logic.
 2. **Be lenient on the assertion.** Test domains are tiny, change
@@ -580,12 +582,12 @@ Plus, by eye:
 
 ## 8. Examples to imitate
 
-| Mesh           | Repo                       | Why look at it                                          |
-|----------------|----------------------------|---------------------------------------------------------|
-| `mesh-0exec`   | `go-url-categorizer-api`   | Clean `safehttp` + JSON API                             |
-| `mesh-0exec`   | `go_jwt_pentest`           | Path-token style with per-token handler                 |
-| `mesh-0crawl`  | `go_apikey_scanner`        | Path-token recon service                                |
-| `mesh-pages`   | `hub_scrapetheworld_org`   | Static dashboard consuming `services.json`             |
+| Mesh          | Repo                     | Why look at it                             |
+| ------------- | ------------------------ | ------------------------------------------ |
+| `mesh-0exec`  | `go-url-categorizer-api` | Clean `safehttp` + JSON API                |
+| `mesh-0exec`  | `go_jwt_pentest`         | Path-token style with per-token handler    |
+| `mesh-0crawl` | `go_apikey_scanner`      | Path-token recon service                   |
+| `mesh-pages`  | `hub_scrapetheworld_org` | Static dashboard consuming `services.json` |
 
 When in doubt, read these directly — sibling repos are right next to
 yours under `/Users/live/Documents/Codex/2026-05-08/` on the local
