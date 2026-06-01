@@ -13,6 +13,8 @@ Set a 20-minute timer. Place your phone face-up on your lap or a flat surface. E
 
 When the timer ends, your phone privately tells _you_ how long _you_ were still. Nobody else can see that.
 
+**Try it:** open the link on two phones in the same room (or two browser tabs to see the mesh sync — note a laptop has no motion sensor, so it always counts as still). Both show "X / N still"; pick up one phone and watch the other's count drop in real time.
+
 ## Gentle accountability without surveillance
 
 The aggregate is the experience: glance at the screen and see "5 / 6 still right now." That's enough social pressure to keep the room calm. No leaderboard, no personal data leaving the device.

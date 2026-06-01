@@ -34,6 +34,20 @@ async function makeMoving(page: Page): Promise<void> {
   });
 }
 
+/** Dispatch two identical DeviceMotionEvents so jerk = 0 < threshold and the
+ * phone flips back to "still" — the symmetric counterpart to makeMoving. */
+async function makeStill(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    for (let i = 0; i < 2; i++) {
+      window.dispatchEvent(
+        new DeviceMotionEvent("devicemotion", {
+          acceleration: { x: 5, y: 5, z: 5 },
+        } as DeviceMotionEventInit),
+      );
+    }
+  });
+}
+
 /**
  * Load-bearing cross-peer test for the advertised core action.
  *
@@ -78,6 +92,12 @@ test("one phone going non-still drops the shared still-count on the other peer",
     await expect(b.locator(".silence-aggregate-num")).toHaveText("1", { timeout: 10_000 });
     // The room still reports 2 phones present — the count dropped, not a peer.
     await expect(b.locator(".silence-hud")).toContainText("2 phones in room");
+
+    // Live, not one-shot: peer A settles back to still and peer B's shared
+    // count must climb back to 2. This proves the awareness signal tracks the
+    // sensor state continuously across the mesh, not just a single drop event.
+    await makeStill(a);
+    await expect(b.locator(".silence-aggregate-num")).toHaveText("2", { timeout: 10_000 });
   } finally {
     await cleanup();
   }

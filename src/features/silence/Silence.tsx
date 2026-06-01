@@ -29,6 +29,7 @@ export function Silence({ roomId, durationMinutes, jerkThreshold }: Props) {
   const [stillCount, setStillCount] = useState(0);
   const [totalCount, setTotalCount] = useState(1);
   const [permissionError, setPermissionError] = useState<string | null>(null);
+  const [sensing, setSensing] = useState<boolean | null>(null);
   const stillRef = useRef(true);
   const stillMsRef = useRef(0);
   const lastTsRef = useRef(0);
@@ -56,6 +57,7 @@ export function Silence({ roomId, durationMinutes, jerkThreshold }: Props) {
     if (!armed) return undefined;
     let cancelled = false;
     let onMotion: ((e: DeviceMotionEvent) => void) | null = null;
+    let noSensorTimer: number | null = null;
 
     const start = async () => {
       const req = (window as unknown as { DeviceMotionEvent?: DeviceMotionRequest })
@@ -78,6 +80,7 @@ export function Silence({ roomId, durationMinutes, jerkThreshold }: Props) {
       onMotion = (e: DeviceMotionEvent) => {
         const a = e.acceleration ?? e.accelerationIncludingGravity;
         if (!a) return;
+        setSensing(true);
         const ax = a.x ?? 0,
           ay = a.y ?? 0,
           az = a.z ?? 0;
@@ -91,12 +94,19 @@ export function Silence({ roomId, durationMinutes, jerkThreshold }: Props) {
         stillRef.current = jerk < jerkThreshold;
       };
       window.addEventListener("devicemotion", onMotion);
+      // No DeviceMotion on this device (most laptops/desktops) → no events
+      // ever fire. Flag it so the UI can be honest that this phone just
+      // counts as "still" rather than silently pretending to sense motion.
+      noSensorTimer = window.setTimeout(() => {
+        setSensing((prev) => (prev === null ? false : prev));
+      }, 2500);
     };
 
     void start();
 
     return () => {
       cancelled = true;
+      if (noSensorTimer) window.clearTimeout(noSensorTimer);
       if (onMotion) window.removeEventListener("devicemotion", onMotion);
     };
   }, [armed, jerkThreshold]);
@@ -199,18 +209,28 @@ export function Silence({ roomId, durationMinutes, jerkThreshold }: Props) {
 
       {permissionError && <p className="silence-error">{permissionError}</p>}
 
+      {!permissionError && sensing === false && (
+        <p className="silence-note">
+          No motion sensor on this device — this phone always counts as still. Open it on a phone to
+          add a real stillness signal.
+        </p>
+      )}
+
       {startedAt === null && (
-        <button
-          type="button"
-          className="silence-start"
-          onClick={() => {
-            stillMsRef.current = 0;
-            lastTsRef.current = Date.now();
-            setStartedAt(Date.now());
-          }}
-        >
-          Start {durationMinutes} min
-        </button>
+        <>
+          <p className="silence-note">Place your phone face-up and still, then start the timer.</p>
+          <button
+            type="button"
+            className="silence-start"
+            onClick={() => {
+              stillMsRef.current = 0;
+              lastTsRef.current = Date.now();
+              setStartedAt(Date.now());
+            }}
+          >
+            Start {durationMinutes} min
+          </button>
+        </>
       )}
 
       {startedAt !== null && !ended && (

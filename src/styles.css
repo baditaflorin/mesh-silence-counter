@@ -138,6 +138,15 @@ body,
   max-width: 28rem;
 }
 
+.silence-note {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  max-width: 28rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
 .silence-start,
 .silence-summary button {
   font-size: 1rem;
