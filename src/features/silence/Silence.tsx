@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { createRoomSync } from "../sync/yjsRoom";
+import { useEffect, useRef, useState } from "react";
+import { createRoomSync, type RoomSync } from "../sync/yjsRoom";
 import { maybeFetchTurnCredentials } from "../sync/iceConfig";
 
 type AwarenessState = { still?: boolean; ts?: number };
@@ -35,16 +35,33 @@ export function Silence({ roomId, durationMinutes, jerkThreshold }: Props) {
   const lastTsRef = useRef(0);
   const lastJerkRef = useRef(0);
 
-  const mesh = useMemo(() => {
-    if (!armed) return null;
-    const room = createRoomSync(roomId);
-    return room;
-  }, [armed, roomId]);
+  const [mesh, setMesh] = useState<RoomSync | null>(null);
 
+  // Fetch TURN credentials *before* opening the WebRTC room, not in parallel
+  // with it. WebrtcProvider reads iceServers once, synchronously, at
+  // construction time (yjsRoom.ts's createRoomSync -> loadIceServers()); a
+  // fire-and-forget fetch that resolves after that point updates
+  // localStorage too late to affect this session's peer connections. On a
+  // brand-new browser (no cached TURN creds yet) that meant the very first
+  // "Join the room" ran STUN-only even though this app exists specifically
+  // because phones on carrier/hotel NAT often can't connect without our
+  // self-hosted TURN relay. maybeFetchTurnCredentials() has its own 3s
+  // timeout so a slow/unreachable token server can't hang the join.
   useEffect(() => {
-    if (!armed) return;
-    void maybeFetchTurnCredentials();
-  }, [armed]);
+    if (!armed) {
+      setMesh(null);
+      return undefined;
+    }
+    let cancelled = false;
+    void (async () => {
+      await maybeFetchTurnCredentials();
+      if (cancelled) return;
+      setMesh(createRoomSync(roomId));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [armed, roomId]);
 
   useEffect(() => {
     return () => {

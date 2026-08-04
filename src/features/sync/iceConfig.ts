@@ -50,8 +50,15 @@ export function resetIceServers(): void {
 export function loadSignalingUrl(): string {
   const stored = localStorage.getItem(SIGNALING_KEY) ?? "";
   if (stored && DEAD_SIGNALING_SERVERS.includes(stored)) {
+    // Self-heal: drop the stale entry and fall through to the live default
+    // instead of handing WebrtcProvider an empty signaling URL. `new
+    // WebSocket("")` doesn't throw — it silently resolves "" against the
+    // current page location (e.g. "ws://<this-origin>/mesh-silence-counter/",
+    // verified in-browser), a host with no signaling endpoint. The result is
+    // the same either way: this browser can never discover real peers again,
+    // with zero visible error, until localStorage is cleared by hand.
     localStorage.removeItem(SIGNALING_KEY);
-    return "";
+    return appConfig.signalingUrl;
   }
   return stored || appConfig.signalingUrl;
 }
@@ -76,8 +83,13 @@ export async function maybeFetchTurnCredentials(): Promise<void> {
   const tokenUrl = loadTurnTokenUrl();
   if (!tokenUrl) return;
 
+  // Bounded timeout: callers now await this before opening the WebRTC room
+  // (see Silence.tsx) so a slow/unreachable TURN token server can't hang
+  // "Join the room" — it degrades to the cached/STUN-only fallback instead.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
   try {
-    const res = await fetch(tokenUrl, { cache: "no-store" });
+    const res = await fetch(tokenUrl, { cache: "no-store", signal: controller.signal });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
     const cred = (await res.json()) as TurnCredential;
@@ -95,5 +107,7 @@ export async function maybeFetchTurnCredentials(): Promise<void> {
     ]);
   } catch (err) {
     console.warn("[turn] credential fetch failed — STUN-only fallback:", err);
+  } finally {
+    clearTimeout(timeout);
   }
 }
